@@ -172,7 +172,8 @@ class MultipleImagePickerModule(reactContext: ReactApplicationContext) : ReactCo
         val height: Int = asset.getInt("height")
         val size: Long = asset.getDouble("size").toLong()
         val bucketId: Long = asset.getDouble("bucketId").toLong()
-        val localMedia = LocalMedia(id, path, realPath, fileName, parentFolderName, duration, chooseModel, mimeType, width, height, size, bucketId)
+        val dateAddedColumn:Long = asset.getDouble("dateAddedColumn").toLong()
+        val localMedia = LocalMedia(id, path, realPath, fileName, parentFolderName, duration, chooseModel, mimeType, width, height, size, bucketId, dateAddedColumn)
         return localMedia
     }
 
