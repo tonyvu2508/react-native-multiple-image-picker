@@ -218,13 +218,13 @@ class MultipleImagePickerModule(reactContext: ReactApplicationContext) : ReactCo
             fOut = FileOutputStream(file)
 
             // 100 means no compression, the lower you go, the stronger the compression
-            image.compress(Bitmap.CompressFormat.JPEG, 50, fOut)
+            image.compress(Bitmap?.CompressFormat?.JPEG, 50, fOut)
             fOut.flush()
             fOut.close()
 
             return "file://$fullPath/$fileName"
         } catch (e: Exception) {
-            println("Error: " + e.message)
+            println("Error: " + e?.message)
             return ""
         }
     }
