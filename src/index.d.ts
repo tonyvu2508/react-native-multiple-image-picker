@@ -35,6 +35,8 @@ export type Options = {
 
 type MultipleImagePickerType = {
   openPicker(options: Options, callback: Object): Promise<any>;
+  openCropPicker(options: Options, callback: Object): Promise<any>;
+  closePickerGIF(options: Options, callback: Object): Promise<any>;
 };
 
 const { MultipleImagePicker } = NativeModules;

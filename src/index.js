@@ -73,6 +73,42 @@ exportObject = {
       }
     });
   },
+  openCropPicker: (optionsPicker) => {
+    const options = {
+      ...defaultOptions,
+      ...optionsPicker,
+    };
+    return new Promise(async (resolve, reject) => {
+      try {
+        const response = await MultipleImagePicker.openCropPicker(options);
+        if (response?.length) {
+          resolve(response);
+          return;
+        }
+        resolve([]);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  },
+  closePickerGIF: (optionsPicker) => {
+    const options = {
+      ...defaultOptions,
+      ...optionsPicker,
+    };
+    return new Promise(async (resolve, reject) => {
+      try {
+        const response = await MultipleImagePicker.closePickerGIF(options);
+        if (response?.length) {
+          resolve(response);
+          return;
+        }
+        resolve([]);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  },
 };
 
 export default exportObject;
