@@ -11,9 +11,9 @@ import TLPhotoPicker
 import PhotosUI
 
 class Cell: TLPhotoCollectionViewCell {
-        
+
     var configure = MultipleImagePickerConfigure
-    
+
     override var duration: TimeInterval? {
         didSet {
             self.durationLabel?.isHidden = self.duration == nil ? true : false
@@ -21,7 +21,7 @@ class Cell: TLPhotoCollectionViewCell {
             self.durationLabel?.text = timeFormatted(timeInterval: duration)
         }
     }
-    
+
     override var isCameraCell: Bool {
         didSet {
             self.orderLabel?.isHidden = self.isCameraCell
@@ -31,7 +31,7 @@ class Cell: TLPhotoCollectionViewCell {
 
     override public var selectedAsset: Bool {
         willSet(newValue) {
-            self.orderLabel?.backgroundColor = newValue ? self.configure.selectedColor : UIColor(red: 1, green: 1, blue: 1, alpha: 0.3)
+            self.orderLabel?.backgroundColor = newValue ? UIColor(red: 0/255, green: 102/255, blue: 204/255, alpha: 1) : UIColor(red: 1, green: 1, blue: 1, alpha: 0.3)
         }
     }
 
@@ -43,7 +43,11 @@ class Cell: TLPhotoCollectionViewCell {
         self.orderLabel?.layer.cornerRadius = 12
         self.orderLabel?.layer.borderWidth = 2
         self.orderLabel?.layer.borderColor = UIColor.white.cgColor
+//        self.orderLabel?.isHidden = true
         self.videoIconImageView?.image = self.configure.videoIcon
+
+//        self.selectedCircle?.backgroundColor = UIColor.red
+
         if #available(iOS 11.0, *) {
             self.imageView?.accessibilityIgnoresInvertColors = true
             self.playerView?.accessibilityIgnoresInvertColors = true
@@ -51,5 +55,5 @@ class Cell: TLPhotoCollectionViewCell {
             self.videoIconImageView?.accessibilityIgnoresInvertColors = true
         }
     }
-    
+
 }

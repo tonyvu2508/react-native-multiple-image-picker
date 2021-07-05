@@ -21,5 +21,6 @@ Pod::Spec.new do |s|
 
   s.dependency "React-Core"
   s.dependency "TLPhotoPicker"
-      
+  s.dependency "ImageSlideshow"
+  s.dependency "WeScan"
 end
