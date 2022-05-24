@@ -1,12 +1,23 @@
 package com.reactnativemultipleimagepicker
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.provider.MediaStore
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.facebook.react.bridge.*
+import com.labters.documentscanner.ImageCropActivity
+import com.labters.documentscanner.helpers.ScannerConstants
 import com.luck.picture.lib.PictureSelector
 import com.luck.picture.lib.app.IApp
 import com.luck.picture.lib.app.PictureAppMaster
@@ -16,15 +27,12 @@ import com.luck.picture.lib.engine.PictureSelectorEngine
 import com.luck.picture.lib.entity.LocalMedia
 import com.luck.picture.lib.listener.OnResultCallbackListener
 import com.luck.picture.lib.style.PictureParameterStyle
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.OutputStream
+import java.io.*
 import java.util.*
 
 
 @Suppress("INCOMPATIBLE_ENUM_COMPARISON", "UNCHECKED_CAST")
-class MultipleImagePickerModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext), IApp {
+class MultipleImagePickerModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext), IApp, ActivityEventListener {
 
     override fun getName(): String {
         return "MultipleImagePicker"
@@ -40,61 +48,118 @@ class MultipleImagePickerModule(reactContext: ReactApplicationContext) : ReactCo
     private var isPreview: Boolean = true
     private var isExportThumbnail: Boolean = false
     private var maxVideo: Int = 20
+    private var callback: Promise? = null
+
+    @ReactMethod
+    fun openCropPicker(options: ReadableMap?, promise: Promise){
+        val activity = currentActivity
+        callback = promise
+        reactApplicationContext.addActivityEventListener(this)
+        val path = options?.getString("doneTitle")
+        val uri = Uri.fromFile(File(path))
+        ScannerConstants.initImageBitmap = uri.toString()
+        var bitmap = MediaStore.Images.Media.getBitmap(reactApplicationContext.contentResolver, uri)
+        bitmap = path?.let { checkBitmap(bitmap, it) };
+        ScannerConstants.selectedImageBitmap = bitmap
+        activity!!.startActivityForResult(Intent(activity, ImageCropActivity::class.java), 123)
+    }
 
     @ReactMethod
     fun openPicker(options: ReadableMap?, promise: Promise): Unit {
+        callback = promise
+        reactApplicationContext.addActivityEventListener(this)
         PictureAppMaster.getInstance().app = this
         val activity = currentActivity
         setConfiguration(options)
-
         PictureSelector.create(activity)
-                .openGallery(if (mediaType == "video") PictureMimeType.ofVideo() else if (mediaType == "image") PictureMimeType.ofImage() else PictureMimeType.ofAll())
-                .loadImageEngine(GlideEngine.createGlideEngine())
-                .maxSelectNum(maxSelectedAssets)
-                .imageSpanCount(numberOfColumn)
-                .isZoomAnim(true)
-                .isPageStrategy(true, 50)
-                .isWithVideoImage(true)
-                .videoMaxSecond(maxVideoDuration)
-                .maxVideoSelectNum(if (maxVideo != 20) maxVideo else maxSelectedAssets)
-                .isMaxSelectEnabledMask(true)
-                .selectionData(selectedAssets)
-                .setPictureStyle(mPictureParameterStyle)
-                .isPreviewImage(isPreview)
-                .isPreviewVideo(isPreview)
-                .isReturnEmpty(true)
-                .selectionMode(if (singleSelectedMode) PictureConfig.SINGLE else PictureConfig.MULTIPLE)
-                .forResult(object : OnResultCallbackListener<Any?> {
-                    override fun onResult(result: MutableList<Any?>?) {
-                        //check difference
-                        if (singleSelectedMode) {
-                            val media: WritableMap = createAttachmentResponse(result?.get(0) as LocalMedia)
-                            promise.resolve(media)
-                            return
-                        }
-                        val localMedia: WritableArray = WritableNativeArray()
-                        if (result?.size == 0) {
-                            promise.resolve(localMedia)
-                            return
-                        }
-                        if (result?.size == selectedAssets.size && (result[result.size - 1] as LocalMedia).id == (selectedAssets[selectedAssets.size - 1].id)) {
-                            return
-                        }
-                        if (result != null) {
-                            for (i in 0 until result.size) {
-                                val item: LocalMedia = result[i] as LocalMedia
-                                println("item: $item")
-                                val media: WritableMap = createAttachmentResponse(item)
-                                localMedia.pushMap(media)
-                            }
-                        }
-                        promise.resolve(localMedia)
-                    }
+            .openGallery(PictureMimeType.ofImage())
+            .loadImageEngine(GlideEngine.createGlideEngine())
+            .isZoomAnim(true)
+            .isPageStrategy(true, 50)
+            .imageEngine(GlideEngine.createGlideEngine())
+            .selectionMode(PictureConfig.SINGLE)
+            .forResult(object : OnResultCallbackListener<Any?> {
+                override fun onResult(result: MutableList<Any?>?) {
+                    val item: LocalMedia = result?.get(0) as LocalMedia
+                    val uri = Uri.fromFile(File(item.realPath))
+                    ScannerConstants.initImageBitmap = uri.toString()
+                    var bitmap = MediaStore.Images.Media.getBitmap(reactApplicationContext.contentResolver, uri)
+                    bitmap = checkBitmap(bitmap, item.realPath);
+                    Log.d("xxxx realPath", item.realPath);
+                    ScannerConstants.selectedImageBitmap = bitmap
+                    activity!!.startActivityForResult(Intent(activity, ImageCropActivity::class.java), 123)
+                }
 
-                    override fun onCancel() {
-                        promise.reject("user cancel")
-                    }
-                })
+                override fun onCancel() {
+                    promise.reject("user cancel")
+                }
+            })
+    }
+
+    fun checkBitmap(bitmap: Bitmap, realPath: String):Bitmap?{
+        try {
+            val exif: ExifInterface = ExifInterface(realPath)
+            val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1)
+            val matrix = Matrix()
+            if (orientation == 6) {
+                matrix.postRotate(90F)
+            } else if (orientation == 3) {
+                matrix.postRotate(180F)
+            } else if (orientation == 8) {
+                matrix.postRotate(270F)
+            }
+            return Bitmap.createBitmap(
+                bitmap,
+                0,
+                0,
+                bitmap.getWidth(),
+                bitmap.getHeight(),
+                matrix,
+                true
+            ) // rotating bitmap
+
+        } catch (e: java.lang.Exception) {
+        }
+        return bitmap;
+    }
+
+    fun getExifInterface(context: Context, uri: Uri): ExifInterface? {
+        try {
+            val path = uri.toString()
+            if (path.startsWith("file://")) {
+                return ExifInterface(path)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                if (path.startsWith("content://")) {
+                    val inputStream = context.contentResolver.openInputStream(uri)
+                    return ExifInterface(inputStream!!)
+                }
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return null
+    }
+
+    fun getExifAngle(context: Context?, uri: Uri?): Float {
+        return try {
+            val exifInterface = getExifInterface(context!!, uri!!) ?: return -1f
+            val orientation = exifInterface.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_UNDEFINED
+            )
+            when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+                ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+                ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+                ExifInterface.ORIENTATION_NORMAL -> 0f
+                ExifInterface.ORIENTATION_UNDEFINED -> -1f
+                else -> -1f
+            }
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+            -1f
+        }
     }
 
     private fun setConfiguration(options: ReadableMap?) {
@@ -118,6 +183,9 @@ class MultipleImagePickerModule(reactContext: ReactApplicationContext) : ReactCo
 
         //bottom style
         pictureStyle.pictureCompleteText = options.getString("doneTitle")
+        pictureStyle.picturePreviewText = "プレビュー"
+        pictureStyle.pictureUnCompleteText = "選んでください"
+        pictureStyle.pictureUnPreviewText = "プレビュー"
         pictureStyle.isOpenCheckNumStyle = true
         pictureStyle.isCompleteReplaceNum = true
         pictureStyle.pictureCompleteTextSize = 16
@@ -219,7 +287,7 @@ class MultipleImagePickerModule(reactContext: ReactApplicationContext) : ReactCo
             fOut = FileOutputStream(file)
 
             // 100 means no compression, the lower you go, the stronger the compression
-            image.compress(Bitmap?.CompressFormat?.JPEG, 50, fOut)
+            image?.compress(Bitmap.CompressFormat.JPEG, 50, fOut)
             fOut.flush()
             fOut.close()
 
@@ -251,6 +319,56 @@ class MultipleImagePickerModule(reactContext: ReactApplicationContext) : ReactCo
 
     override fun getPictureSelectorEngine(): PictureSelectorEngine {
         return PictureSelectorEngineImp()
+    }
+
+    override fun onActivityResult(activity: Activity?, requestCode: Int, resultCode: Int, data: Intent?) {
+        if(requestCode == 123 && resultCode == Activity.RESULT_OK){
+            val TOP_LEFT_X = data?.getStringExtra(ImageCropActivity.POINT_X1);
+            val TOP_LEFT_Y = data?.getStringExtra(ImageCropActivity.POINT_Y1);
+
+            val TOP_RIGHT_X = data?.getStringExtra(ImageCropActivity.POINT_X2);
+            val TOP_RIGHT_Y = data?.getStringExtra(ImageCropActivity.POINT_Y2);
+
+            val BOTTOM_LEFT_X = data?.getStringExtra(ImageCropActivity.POINT_X3);
+            val BOTTOM_LEFT_Y = data?.getStringExtra(ImageCropActivity.POINT_Y3);
+
+            val BOTTOM_RIGHT_X = data?.getStringExtra(ImageCropActivity.POINT_X4);
+            val BOTTOM_RIGHT_Y = data?.getStringExtra(ImageCropActivity.POINT_Y4);
+
+            val points: WritableArray = WritableNativeArray()
+            val myUri = getImageUri(appContext, ScannerConstants.selectedImageBitmap)
+            points.pushString(ScannerConstants.initImageBitmap)
+            points.pushString(TOP_LEFT_X)
+            points.pushString(TOP_LEFT_Y)
+            points.pushString(TOP_RIGHT_X)
+            points.pushString(TOP_RIGHT_Y)
+            points.pushString(BOTTOM_LEFT_X)
+            points.pushString(BOTTOM_LEFT_Y)
+            points.pushString(BOTTOM_RIGHT_X)
+            points.pushString(BOTTOM_RIGHT_Y)
+            points.pushString(myUri.toString())
+            Log.d("xxxxx", points.toString());
+            callback?.resolve(points)
+            Handler(Looper.getMainLooper()).postDelayed(
+                Runnable {
+                    reactApplicationContext.contentResolver.delete(myUri, null, null)
+                   },
+                3000
+            )
+        }else{
+            callback?.resolve("cancel")
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        Log.d("xxxx intent", intent.toString())
+    }
+
+    fun getImageUri(inContext: Context, inImage: Bitmap): Uri {
+        val bytes = ByteArrayOutputStream()
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
+        val path = MediaStore.Images.Media.insertImage(inContext.contentResolver, inImage, "Title", null)
+        return Uri.parse(path)
     }
 
 }

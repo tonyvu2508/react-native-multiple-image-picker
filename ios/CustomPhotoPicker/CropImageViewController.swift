@@ -9,7 +9,7 @@ import UIKit
 import WeScan
 
 public protocol CropImageViewControllerDelegate: NSObjectProtocol {
-
+    
     /// Tells the delegate that the user scanned a document.
     ///
     /// - Parameters:
@@ -17,39 +17,42 @@ public protocol CropImageViewControllerDelegate: NSObjectProtocol {
     ///   - results: The results of the user scanning with the camera.
     /// - Discussion: Your delegate's implementation of this method should dismiss the image scanner controller.
     func imageCropScannerController(_ path: ImageScannerResults)
-
+    
     func imageCropScannerControllerCancel(_ path: String)
-
+    
 }
 
 class CropImageViewController: UIViewController, ImageScannerControllerDelegate {
-
+    
     private var submitButton: UIButton?
     public var uri: String?
+    public var isFakeData: Bool?
+    public var points: NSArray?
+    public var resizeWidth: CGFloat?
+    public var resizeHeight: CGFloat?
     public weak var cropImageViewDelegate: CropImageViewControllerDelegate?
-
+    
     func imageScannerController(_ scanner: ImageScannerController, didFinishScanningWithResults results: ImageScannerResults) {
        // scanner.dismiss(animated: true);
         cropImageViewDelegate?.imageCropScannerController(results)
         scanner.dismiss(animated: true)
     }
-
+    
     func imageScannerControllerDidCancel(_ scanner: ImageScannerController) {
         cropImageViewDelegate?.imageCropScannerControllerCancel("cancel")
         scanner.dismiss(animated: true);
     }
-
+    
     func imageScannerController(_ scanner: ImageScannerController, didFailWithError error: Error) {
         print(error);
     }
-
+    
     override func viewDidAppear(_ animated: Bool) {
         self.dismiss(animated: false);
         self.crop()
     }
-
+    
     func checkDevice() -> Bool{
-        print("xxxxxx", UIScreen.main.nativeBounds.height)
         switch UIScreen.main.nativeBounds.height {
         case 1136:
 //            print("iPhone 5 or 5S or 5C")
@@ -76,7 +79,7 @@ class CropImageViewController: UIViewController, ImageScannerControllerDelegate 
             return true
         }
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
     }
@@ -84,8 +87,7 @@ class CropImageViewController: UIViewController, ImageScannerControllerDelegate 
     func crop(){
         let imageUrl = NSURL(string: self.uri!)
         let image = RCTImageFromLocalAssetURL(imageUrl as! URL);
-        let scannerViewController = ImageScannerController(image: image)
-//        let scannerViewController = ImageScannerController(image: UIImage(named: "demo"))
+        let scannerViewController = ImageScannerController(image: image, delegate: nil, points: self.points, resizeWidth: self.resizeWidth, resizeHeight: self.resizeHeight)
         scannerViewController.imageScannerDelegate = self
         scannerViewController.modalTransitionStyle = .coverVertical
         if checkDevice() {
@@ -93,7 +95,7 @@ class CropImageViewController: UIViewController, ImageScannerControllerDelegate 
         }
         present(scannerViewController, animated: true)
     }
-
+    
 }
 
 

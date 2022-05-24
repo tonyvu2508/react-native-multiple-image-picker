@@ -1,51 +1,45 @@
 {
-  "name": "@ymane/react-native-multiple-image-picker",
-  "version": "0.2.9",
-  "description": "react-native-multiple-image-picker enables application to pick images and videos from multiple smart album in iOS/Android, similar to the current facebook app.",
-  "main": "lib/commonjs/index",
-  "module": "lib/module/index",
-  "types": "lib/typescript/src/index.d.ts",
-  "react-native": "src/index",
-  "source": "src/index",
-  "files": [
-    "src",
-    "lib",
-    "android",
-    "ios",
-    "cpp",
-    "react-native-multiple-image-picker.podspec",
-    "!lib/typescript/example",
-    "!android/build",
-    "!ios/build",
-    "!**/__tests__",
-    "!**/__fixtures__",
-    "!**/__mocks__"
-  ],
-  "scripts": {
-    "test": "jest",
-    "typescript": "tsc --noEmit",
-    "lint": "eslint \"**/*.{js,ts,tsx}\"",
-    "prepare": "bob build",
-    "release": "release-it",
-    "example": "yarn --cwd example",
-    "pods": "cd example && pod-install --quiet",
-    "bootstrap": "yarn example && yarn && yarn pods"
+  "_from": "@baronha/react-native-multiple-image-picker",
+  "_id": "@baronha/react-native-multiple-image-picker@0.2.10",
+  "_inBundle": false,
+  "_integrity": "sha512-c/XQvRmrwld/iJxbx+/V0ytcxD6Dm6pGLZdaPfnuQwLUgRQM+YCl6HbYmR4gKiJwKXmcgzmZsucIpczC+3xT2w==",
+  "_location": "/@baronha/react-native-multiple-image-picker",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "@baronha/react-native-multiple-image-picker",
+    "name": "@baronha/react-native-multiple-image-picker",
+    "escapedName": "@baronha%2freact-native-multiple-image-picker",
+    "scope": "@baronha",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
   },
-  "keywords": [
-    "react-native",
-    "ios",
-    "android"
+  "_requiredBy": [
+    "#USER",
+    "/"
   ],
-  "repository": "https://github.com/ymane/react-native-multiple-image-picker",
-  "author": "Baron Ha. <baronn.ha@gmail.com> (https://github.com/baronha)",
-  "license": "MIT",
+  "_resolved": "https://registry.npmjs.org/@baronha/react-native-multiple-image-picker/-/react-native-multiple-image-picker-0.2.10.tgz",
+  "_shasum": "606c854f902424851606d2c0262063e4667a36c1",
+  "_spec": "@baronha/react-native-multiple-image-picker",
+  "_where": "/Users/dinhtrung/Desktop/Projects/C3App",
+  "author": {
+    "name": "Baron Ha.",
+    "email": "baronn.ha@gmail.com",
+    "url": "https://github.com/baronha"
+  },
   "bugs": {
-    "url": "https://github.com/ymane/react-native-multiple-image-picker/issues"
+    "url": "https://github.com/baronha/react-native-multiple-image-picker/issues"
   },
-  "homepage": "https://github.com/ymane/react-native-multiple-image-picker#readme",
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+  "bundleDependencies": false,
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
   },
+  "deprecated": false,
+  "description": "react-native-multiple-image-picker enables application to pick images and videos from multiple smart album in iOS/Android, similar to the current facebook app.",
   "devDependencies": {
     "@commitlint/config-conventional": "^11.0.0",
     "@react-native-community/eslint-config": "^2.0.0",
@@ -65,45 +59,6 @@
     "react-native-builder-bob": "^0.17.1",
     "release-it": "^14.2.2",
     "typescript": "^4.1.3"
-  },
-  "peerDependencies": {
-    "react": "*",
-    "react-native": "*"
-  },
-  "jest": {
-    "preset": "react-native",
-    "modulePathIgnorePatterns": [
-      "<rootDir>/example/node_modules",
-      "<rootDir>/lib/"
-    ]
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "yarn lint && yarn typescript"
-    }
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
-  },
-  "release-it": {
-    "git": {
-      "commitMessage": "chore: release ${version}",
-      "tagName": "v${version}"
-    },
-    "npm": {
-      "publish": true
-    },
-    "github": {
-      "release": true
-    },
-    "plugins": {
-      "@release-it/conventional-changelog": {
-        "preset": "angular"
-      }
-    }
   },
   "eslintConfig": {
     "root": true,
@@ -128,6 +83,47 @@
     "node_modules/",
     "lib/"
   ],
+  "files": [
+    "src",
+    "lib",
+    "android",
+    "ios",
+    "cpp",
+    "react-native-multiple-image-picker.podspec",
+    "!lib/typescript/example",
+    "!android/build",
+    "!ios/build",
+    "!**/__tests__",
+    "!**/__fixtures__",
+    "!**/__mocks__"
+  ],
+  "homepage": "https://github.com/baronha/react-native-multiple-image-picker#readme",
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-commit": "yarn lint && yarn typescript"
+    }
+  },
+  "jest": {
+    "preset": "react-native",
+    "modulePathIgnorePatterns": [
+      "<rootDir>/example/node_modules",
+      "<rootDir>/lib/"
+    ]
+  },
+  "keywords": [
+    "react-native",
+    "ios",
+    "android"
+  ],
+  "license": "MIT",
+  "main": "lib/commonjs/index",
+  "module": "lib/module/index",
+  "name": "@baronha/react-native-multiple-image-picker",
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
   "prettier": {
     "quoteProps": "consistent",
     "singleQuote": true,
@@ -135,6 +131,10 @@
     "trailingComma": "es5",
     "useTabs": false
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "react-native": "src/index",
   "react-native-builder-bob": {
     "source": "src",
     "output": "lib",
@@ -148,5 +148,39 @@
         }
       ]
     ]
-  }
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release ${version}",
+      "tagName": "v${version}"
+    },
+    "npm": {
+      "publish": true
+    },
+    "github": {
+      "release": true
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "preset": "angular"
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/baronha/react-native-multiple-image-picker.git"
+  },
+  "scripts": {
+    "bootstrap": "yarn example && yarn && yarn pods",
+    "example": "yarn --cwd example",
+    "lint": "eslint \"**/*.{js,ts,tsx}\"",
+    "pods": "cd example && pod-install --quiet",
+    "prepare": "bob build",
+    "release": "release-it",
+    "test": "jest",
+    "typescript": "tsc --noEmit"
+  },
+  "source": "src/index",
+  "types": "lib/typescript/src/index.d.ts",
+  "version": "0.2.10"
 }

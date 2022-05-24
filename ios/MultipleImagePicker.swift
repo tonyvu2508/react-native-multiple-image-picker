@@ -10,12 +10,16 @@ class MultipleImagePicker: NSObject, TLPhotosPickerViewControllerDelegate,UINavi
 
     func imageCropScannerController(_ results: ImageScannerResults) {
         // Create a URL in the /tmp directory
-        guard let imageURL = NSURL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("TempImage.png") else {
+        guard let imageURL = NSURL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("TempImage.jpeg") else {
             return
         }
         // save image to URL
         do {
-            try results.croppedScan.image.pngData()?.write(to: imageURL)
+            if(results.doesUserPreferEnhancedScan){
+                try results.enhancedScan?.image.jpegData(compressionQuality: 0.5)?.write(to: imageURL)
+            }else{
+                try results.croppedScan.image.jpegData(compressionQuality: 0.5)?.write(to: imageURL)
+            }
         } catch { }
         let image = [
             "path": imageURL.absoluteString,
@@ -68,7 +72,6 @@ class MultipleImagePicker: NSObject, TLPhotosPickerViewControllerDelegate,UINavi
 //         let generator = UIImpactFeedbackGenerator(style: .medium)
 //         generator.impactOccurred()
 
-        print("xxxx", picker.selectedAssets);
     }
 
     func selectedAlbum(picker: TLPhotosPickerViewController, title: String, at: Int) {
@@ -81,9 +84,8 @@ class MultipleImagePicker: NSObject, TLPhotosPickerViewControllerDelegate,UINavi
         self.getTopMostViewController()?.dismiss(animated: true, completion: nil)
         }
     }
-
+    
     func checkDevice() -> Bool{
-        print("xxxxxx", UIScreen.main.nativeBounds.height)
         switch UIScreen.main.nativeBounds.height {
         case 1136:
 //            print("iPhone 5 or 5S or 5C")
@@ -138,6 +140,10 @@ class MultipleImagePicker: NSObject, TLPhotosPickerViewControllerDelegate,UINavi
         let viewController = CropImageViewController()
         viewController.cropImageViewDelegate = self
         viewController.uri = options["doneTitle"] as! String
+        viewController.isFakeData = options["isFakeData"] as! Bool
+        viewController.points = options["points"] as! NSArray
+        viewController.resizeWidth = options["resizeWidth"] as! CGFloat
+        viewController.resizeHeight = options["resizeHeight"] as! CGFloat
         DispatchQueue.main.async {
                     self.getTopMostViewController()?.present(viewController, animated: false, completion: nil)
                 }
